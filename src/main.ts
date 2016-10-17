@@ -1,14 +1,32 @@
+import {HomeComponent} from './app/home/home.component';
+import {AppComponent} from './app/app.component';
 import { enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule } from './app/app.module';
+import { upgradeAdapter } from './upgrade-adapter';
 
 // depending on the env mode, enable prod mode or add debugging modules
 if (process.env.ENV === 'build') {
   enableProdMode();
 }
 
+
+
+angular.module('app.module.ng1')
+  .directive(
+    'myApp',
+    upgradeAdapter.downgradeNg2Component(AppComponent) as angular.IDirectiveFactory
+  );
+
+angular.module('app.module.ng1')
+  .directive(
+    'myHome',
+    upgradeAdapter.downgradeNg2Component(HomeComponent) as angular.IDirectiveFactory
+  );
+
+
+
+console.log('bootstraping');
 export function main() {
-  return platformBrowserDynamic().bootstrapModule(AppModule);
+  return upgradeAdapter.bootstrap(document.body, ['app.module.ng1']);
 }
 
 if (document.readyState === 'complete') {

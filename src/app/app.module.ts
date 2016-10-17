@@ -1,3 +1,4 @@
+import {upgradeAdapter} from '../upgrade-adapter';
 import { NgModule, ApplicationRef } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
@@ -11,6 +12,9 @@ import { routing } from './app.routing';
 
 import { removeNgStyles, createNewHosts } from '@angularclass/hmr';
 
+const govWarningBanner = upgradeAdapter.upgradeNg1Component('govWarningBanner');
+
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -21,7 +25,8 @@ import { removeNgStyles, createNewHosts } from '@angularclass/hmr';
   declarations: [
     AppComponent,
     HomeComponent,
-    AboutComponent
+    AboutComponent,
+    govWarningBanner
   ],
   providers: [
     ApiService

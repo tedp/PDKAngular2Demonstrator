@@ -50,7 +50,7 @@ module.exports = function makeWebpackConfig() {
   config.entry = isTest ? {} : {
     'polyfills': './src/polyfills.ts',
     'vendor': './src/vendor.ts',
-    'app': './src/main.ts' // our angular app
+    'app': ['./src/app/app.module.ng1.ts', './src/main.ts'] // our angular app
   };
 
   /**
@@ -95,10 +95,8 @@ module.exports = function makeWebpackConfig() {
       },
 
       // copy those assets to output
-      {
-        test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'file?name=fonts/[name].[hash].[ext]?'
-      },
+      {test: /\.(jpg|jpeg|gif|png)$/, loader: 'url?limit=1&name=assets/images/[name].[ext]'},
+      {test: /\.(woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'url?limit=1&name=assets/fonts/[name].[ext]'},
 
       // Support for *.json files.
       {test: /\.json$/, loader: 'json'},
@@ -123,11 +121,11 @@ module.exports = function makeWebpackConfig() {
         loader: isTest ? 'null' : ExtractTextPlugin.extract({ fallbackLoader: 'style-loader', loader: ['css', 'postcss', 'sass']})
       },
       // all css required in src/app files will be merged in js files
-      {test: /\.scss$/, exclude: root('src', 'style'), loader: 'raw!postcss!sass'},
+      {test: /\.scss$/, exclude: root('src', 'assets'), loader: 'raw!postcss!sass'},
 
       // support for .html as raw text
       // todo: change the loader to something that adds a hash to images
-      {test: /\.html$/, loader: 'raw',  exclude: root('src', 'public')}
+      {test: /\.html$/, loader: 'raw',  exclude: root('src', 'assets')}
     ]
   };
 
@@ -157,6 +155,26 @@ module.exports = function makeWebpackConfig() {
    * List: http://webpack.github.io/docs/list-of-plugins.html
    */
   config.plugins = [
+
+    new CopyWebpackPlugin([{
+      context: './src',
+      from: 'assets/**'
+    },
+    {
+      context: './node_modules/govuk_template_mustache',
+      from: 'assets/stylesheetss/**'
+    },
+    {
+      context: './node_modules/govuk_template_mustache',
+      from: 'assets/images/**'
+    },
+    {
+      context: './node_modules/govuk_frontend_toolkit',
+      from: 'images/**',
+      to: 'assets/'
+    }
+    ]),
+
     // Define env variables to help with builds
     // Reference: https://webpack.github.io/docs/list-of-plugins.html#defineplugin
     new webpack.DefinePlugin({
@@ -190,7 +208,11 @@ module.exports = function makeWebpackConfig() {
          * Transforms .scss files to .css
          */
         sassLoader: {
-          //includePaths: [path.resolve(__dirname, "node_modules/foundation-sites/scss")]
+          includePaths: [
+            root('node_modules/govuk_frontend_toolkit/stylesheets'),
+            'node_modules/govuk-elements-sass/public/sass',
+            'src/assets'
+          ]
         },
         /**
          * PostCSS
@@ -224,7 +246,7 @@ module.exports = function makeWebpackConfig() {
       // Inject script and link tags into html files
       // Reference: https://github.com/ampedandwired/html-webpack-plugin
       new HtmlWebpackPlugin({
-        template: './src/public/index.html',
+        template: './src/assets/index.html',
         chunksSortMode: 'dependency'
       }),
 
@@ -248,13 +270,8 @@ module.exports = function makeWebpackConfig() {
 
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
       // Minify all javascript, switch loaders to minimizing mode
-      new webpack.optimize.UglifyJsPlugin({sourceMap: true, mangle: { keep_fnames: true }}),
+      new webpack.optimize.UglifyJsPlugin({sourceMap: true, mangle: { keep_fnames: true }})
 
-      // Copy assets from the public folder
-      // Reference: https://github.com/kevlened/copy-webpack-plugin
-      new CopyWebpackPlugin([{
-        from: root('src/public')
-      }])
     );
   }
 
@@ -264,9 +281,9 @@ module.exports = function makeWebpackConfig() {
    * Reference: http://webpack.github.io/docs/webpack-dev-server.html
    */
   config.devServer = {
-    contentBase: './src/public',
     historyApiFallback: true,
     quiet: true,
+    outputPath: path.join(__dirname, 'dist'),
     stats: 'minimal' // none (or false), errors-only, minimal, normal (or true) and verbose
   };
 

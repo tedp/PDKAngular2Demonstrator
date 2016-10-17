@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 import { ApiService } from './shared';
 
-import '../style/app.scss';
+import '../assets/app.scss';
 
 @Component({
   selector: 'my-app', // <my-app></my-app>
@@ -10,9 +10,11 @@ import '../style/app.scss';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
+
   url = 'https://github.com/preboot/angular2-webpack';
 
   constructor(private api: ApiService) {
+    console.log('AppComponent');
     // Do something with api
   }
 }
